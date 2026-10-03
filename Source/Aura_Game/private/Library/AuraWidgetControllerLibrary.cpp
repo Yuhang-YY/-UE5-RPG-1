@@ -323,6 +323,11 @@ void UAuraWidgetControllerLibrary::SetRadialDamageOrigin(FGameplayEffectContextH
 	}
 }
 
+void UAuraWidgetControllerLibrary::SetDamageEffectParamForTargetASC(FDamageEffectParams& DamageEffectParams, UAbilitySystemComponent* TargetASC)
+{
+	DamageEffectParams.TargetAbilitySystemComponent = TargetASC;
+}
+
 void UAuraWidgetControllerLibrary::GetLifeActorWithingRadius(const UObject* WorldContextObject,TArray<AActor*>& OutActors, const TArray<AActor*> OtherActors, float Radius, FVector SphereLocation)
 {
 	FCollisionQueryParams SphereParams;
@@ -406,6 +411,22 @@ int32 UAuraWidgetControllerLibrary::GetXPRewardForClassAndLevel(const UObject* W
 
 FGameplayEffectContextHandle UAuraWidgetControllerLibrary::ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams)
 {
+	if (!IsValid(DamageEffectParams.SourceAbilitySystemComponent.Get()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ApplyDamageEffect skipped: SourceAbilitySystemComponent is invalid."));
+		return FGameplayEffectContextHandle();
+	}
+	if (!IsValid(DamageEffectParams.TargetAbilitySystemComponent.Get()))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ApplyDamageEffect skipped: TargetAbilitySystemComponent is invalid. Set the target ASC on the damage parameters before applying damage."));
+		return FGameplayEffectContextHandle();
+	}
+	if (!DamageEffectParams.DamageGameplayEffectClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ApplyDamageEffect skipped: DamageGameplayEffectClass is not set."));
+		return FGameplayEffectContextHandle();
+	}
+
 	FUAuraGameplayTags Tags = FUAuraGameplayTags::Get();
 	
 	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeEffectContext();
@@ -416,6 +437,11 @@ FGameplayEffectContextHandle UAuraWidgetControllerLibrary::ApplyDamageEffect(con
 	SetRadialDamageOrigin(EffectContextHandle,DamageEffectParams.RadialDamageOrigin);
 	
 	FGameplayEffectSpecHandle SpecHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeOutgoingSpec(DamageEffectParams.DamageGameplayEffectClass,DamageEffectParams.AbilityLevel,EffectContextHandle);
+	if (!SpecHandle.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ApplyDamageEffect skipped: MakeOutgoingSpec returned an invalid spec."));
+		return FGameplayEffectContextHandle();
+	}
 	
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,DamageEffectParams.DamageType,DamageEffectParams.BaseDamage);
 	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,Tags.Debuff_Chance,DamageEffectParams.DebuffChance);
@@ -469,4 +495,12 @@ TArray<FVector> UAuraWidgetControllerLibrary::EvenlyRotatedVectors(const FVector
 		Vectors.Add(Forward);	
 	}
 	return Vectors;
+}
+
+void UAuraWidgetControllerLibrary::SetIsRadialDamageEffectParams(FDamageEffectParams& DamageEffectParams,bool bIsRadialDamage, float InnerRadius, float OuterRadius, FVector Origin)
+{
+	DamageEffectParams.bIsRadialDamage = bIsRadialDamage;
+	DamageEffectParams.RadialDamageInnerRadius = InnerRadius;
+	DamageEffectParams.RadialDamageOuterRadius = OuterRadius;
+	DamageEffectParams.RadialDamageOrigin = Origin;
 }

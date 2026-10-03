@@ -46,14 +46,24 @@ void AAuraProjectile::BeginPlay()
 	
 }
 
-void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AAuraProjectile::OnHit()
 {
-	if (!OtherActor)
+	UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
+	if (LoopPtr)
 	{
-		return;
+		LoopPtr->Stop();
+		LoopPtr->DestroyComponent();
 	}
+	IsHit = true;
+}
 
+void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	
+	if (!IsvalidOverlap(OtherActor)) return;
+	
 	// DamageEffectParams 只存在于服务器生成的投射物上
 	if (!HasAuthority())
 	{
@@ -61,29 +71,6 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 		return;
 	}
 
-	UAbilitySystemComponent* SourceASC =
-		DamageEffectParams.SourceAbilitySystemComponent;
-
-	if (!IsValid(SourceASC))
-	{
-		Destroy();
-		return;
-	}
-
-	AActor* SourceActor = SourceASC->GetAvatarActor();
-
-	if (!IsValid(SourceActor) || SourceActor == OtherActor)
-	{
-		return;
-	}
-
-	if (!UAuraWidgetControllerLibrary::ISBothFirend(SourceActor, OtherActor))
-	{
-		return;
-	}
-
-
-	
 	UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation());
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
 	if (LoopPtr)
@@ -122,6 +109,18 @@ void AAuraProjectile::Destroyed()
 	}
 	
 	Super::Destroyed();
+}
+
+bool AAuraProjectile::IsvalidOverlap(AActor* OtherActor)
+{
+	if (!OtherActor) return false;
+	UAbilitySystemComponent* SourceASC = DamageEffectParams.SourceAbilitySystemComponent;
+	if (!IsValid(SourceASC)){Destroy();return false;}
+	AActor* SourceActor = SourceASC->GetAvatarActor();
+	if (!IsValid(SourceActor) || SourceActor == OtherActor)return false;
+	if (!UAuraWidgetControllerLibrary::ISBothFirend(SourceActor, OtherActor))return false;
+	
+	return true;
 }
 
 

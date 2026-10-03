@@ -22,7 +22,7 @@ public:
 	void CauseDamage(AActor* Target);
 	
 	UFUNCTION(BlueprintCallable)
-	FDamageEffectParams MakeDamageEffectParamsFromClassDefaults(AActor* Target =nullptr,FVector RadialDamageOrigin = FVector::ZeroVector)const ;
+	FDamageEffectParams MakeDamageEffectParamsFromClassDefaults(AActor* Target = nullptr,FVector RadialDamageOrigin = FVector::ZeroVector)const ;
 	
 	UFUNCTION(BlueprintPure)
 	float GetDamageAtLevel()const;

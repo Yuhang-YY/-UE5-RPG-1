@@ -68,6 +68,7 @@ public:
 	
 	//技能标签
 	FGameplayTag Ability_Fire_FireBolt;
+	FGameplayTag Ability_Fire_FireBlast;
 	FGameplayTag Ability_Lightning_Electrocute;
 	FGameplayTag Ability_Arcane_ArcaneShard;
 	

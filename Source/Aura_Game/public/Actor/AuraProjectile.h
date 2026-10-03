@@ -19,31 +19,33 @@ class AURA_GAME_API AAuraProjectile : public AActor
 	
 public:	
 	AAuraProjectile();
+	
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
 	
 	UPROPERTY()
 	TObjectPtr<USceneComponent> HomingTargetSceneComponent;
+
 	
 	UPROPERTY(BlueprintReadWrite,meta=(Excute = true))
 	FDamageEffectParams DamageEffectParams;
 protected:
-	
 	virtual void BeginPlay() override;
 	
+	UFUNCTION(BlueprintCallable)
+	void OnHit();
 	UFUNCTION()
-	void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult);
+	virtual void OnSphereOverlap(UPrimitiveComponent* OverlappedComponent,AActor* OtherActor,UPrimitiveComponent* OtherComp,int32 OtherBodyIndex,bool bFromSweep,const FHitResult& SweepResult);
     virtual void Destroyed() override;
-private:
-	UPROPERTY(EditAnywhere)
-	float LifeSpan = 15.0f;
-	bool IsHit = false;
-	
-
+	bool IsvalidOverlap(AActor* OtherActor);
 	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> Sphere;
+	bool IsHit = false;
+private:
+	UPROPERTY(EditAnywhere)
+	float LifeSpan = 15.0f;
 	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UNiagaraSystem> ImpactEffect;

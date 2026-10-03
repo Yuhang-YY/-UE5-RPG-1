@@ -12,6 +12,7 @@
 #include "UAuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Actor/MagicCircle.h"
+#include "Aura_Game/Aura_Game.h"
 #include "Components/DecalComponent.h"
 #include "Components/SplineComponent.h"
 #include "GameFramework/Character.h"
@@ -136,7 +137,8 @@ void AAuraPlayerController::CursorTrace()
 		return;
 	}
 	
-	GetHitResultUnderCursor(ECC_Visibility,false,Hit);
+	ECollisionChannel Channel = IsValid(MagicCircle)? ECC_ExcludePlayers:ECC_Visibility;
+	GetHitResultUnderCursor(Channel,false,Hit);
 	if (!Hit.bBlockingHit) {return;}
 	
 	//一个记录上一个的物体，防止this为空

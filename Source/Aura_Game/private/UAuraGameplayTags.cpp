@@ -103,6 +103,7 @@ void FUAuraGameplayTags::InitializeNativeGameplayTags()
 	
 	//主动技能标签
 	GameplayTags.Ability_Fire_FireBolt = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Fire.FireBolt"),FString());
+	GameplayTags.Ability_Fire_FireBlast = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Fire.FireBlast"),FString());
 	GameplayTags.Ability_Lightning_Electrocute = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Lightning.Electrocute"),FString());
 	GameplayTags.Ability_Arcane_ArcaneShard = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Ability.Arcane.ArcaneShard"),FString());
 	

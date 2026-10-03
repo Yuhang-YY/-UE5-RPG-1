@@ -111,6 +111,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="EffectContext")
 	static void SetRadialDamageOrigin(FGameplayEffectContextHandle& EffectContextHandle,const FVector& RadialDamageOrigin);
 	
+	UFUNCTION(BlueprintCallable, Category="EffectContext")
+	static void SetDamageEffectParamForTargetASC(UPARAM(ref)FDamageEffectParams& DamageEffectParams, UAbilitySystemComponent* TargetASC);
+	
 	UFUNCTION(BlueprintCallable, Category="Effect")
 	static void GetLifeActorWithingRadius(const UObject* WorldContextObject,TArray<AActor*> &OutActors,const TArray<AActor*> OtherActors,float Radius,FVector SphereLocation);
 	
@@ -131,4 +134,7 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	static TArray<FVector> EvenlyRotatedVectors(const FVector& Forward,const FVector& Axis,float Spread,int32 NumProjectile);
+	
+	UFUNCTION(BlueprintCallable, Category="DamageEffect")
+	static void SetIsRadialDamageEffectParams(UPARAM(ref)FDamageEffectParams& DamageEffectParams,bool bIsRadialDamage,float InnerRadius,float OuterRadius,FVector Origin);
 };
