@@ -21,9 +21,14 @@ public:
 	
 	void InitializeLoadSlotViewModel();
 	
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UMVVM_LoadSlot> LoadSlotViewModelClass;
+	UFUNCTION(BlueprintCallable) //当Taken按下时调用的函数
+	void NewSlotButtonPressed(int32 Index,const FString& PlayerName);
 	
+	UFUNCTION(BlueprintCallable)
+	void NewGameButtonPressed(int32 Index);
+	
+	UFUNCTION(BlueprintCallable)
+	void SelectionSlotButtonPressed(int32 Index);
 private:
 	UPROPERTY()
 	TMap<int32, UMVVM_LoadSlot*> LoadSlotViewModelMap;
@@ -37,4 +42,6 @@ private:
 	UPROPERTY()
 	TObjectPtr<UMVVM_LoadSlot> LoadSlot_2;
 	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UMVVM_LoadSlot> LoadSlotViewModelClass;
 };

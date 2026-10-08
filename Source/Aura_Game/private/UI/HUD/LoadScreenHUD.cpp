@@ -12,7 +12,7 @@ void ALoadScreenHUD::BeginPlay()
 	Super::BeginPlay();
 	
 	//初始化主视图模型和三个插槽视图模型
-	ViewModelLoadScreen = NewObject<UMVVM_LoadScreen>(ViewModelLoadScreenClass);
+	ViewModelLoadScreen = NewObject<UMVVM_LoadScreen>(this,ViewModelLoadScreenClass);
 	ViewModelLoadScreen->InitializeLoadSlotViewModel();
 	
 	LoadScreenWidget = CreateWidget<ULoadScreenWidget>(GetWorld(),LoadScreenWidgetClass);
