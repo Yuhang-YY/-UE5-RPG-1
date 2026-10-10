@@ -7,9 +7,12 @@
 #include "MVVM_LoadScreen.generated.h"
 
 class UMVVM_LoadSlot;
+
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSelectedButton);
+
 UCLASS()
 class AURA_GAME_API UMVVM_LoadScreen : public UMVVMViewModelBase
 {
@@ -29,7 +32,21 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void SelectionSlotButtonPressed(int32 Index);
+	
+	UFUNCTION(BlueprintCallable)
+	void SureDeleteButtonPressed();
+	
+	UFUNCTION(BlueprintCallable)
+	void PlayButtonPressed();
+	
+	void LoadData();
+	
+	UPROPERTY(BlueprintAssignable)
+	FSelectedButton SelectedButton;
 private:
+	UPROPERTY()
+	UMVVM_LoadSlot* SelectedSlot;
+	
 	UPROPERTY()
 	TMap<int32, UMVVM_LoadSlot*> LoadSlotViewModelMap;
 	

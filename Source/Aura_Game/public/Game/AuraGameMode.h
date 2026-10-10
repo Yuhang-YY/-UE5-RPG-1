@@ -7,6 +7,9 @@
 #include "AuraGameMode.generated.h"
 
 
+class ULoadScreenSaveGame;
+class USaveGame;
+class UMVVM_LoadSlot;
 class UAuraAbilityInfo;
 class UCharacterClassInfo;
 /**
@@ -23,4 +26,29 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly,Category="AbilityInfo")
 	TObjectPtr<UAuraAbilityInfo> AbilityInfo;
+	
+	void SaveSlotData(UMVVM_LoadSlot *SaveSlot,int32 SlotIndex);
+	
+	ULoadScreenSaveGame* GetSaveGameSlot(const FString& SlotName,int32 SlotIndex);
+	
+	void TravelToMap(UMVVM_LoadSlot* SaveSlot);
+	
+	
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<USaveGame> LoadScreenSaveGameClass;
+	
+	//Property
+	UPROPERTY(EditDefaultsOnly)
+	FString StartLoadMapName;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> DefaultMap;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FString,TSoftObjectPtr<UWorld>> Maps;
+	
+	static void DeleteSlot(const FString& SlotName,int32 SlotIndex);
+protected:
+	virtual void BeginPlay() override;
 };
