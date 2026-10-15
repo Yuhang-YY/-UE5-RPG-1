@@ -3,6 +3,7 @@
 
 #include "UI/ViewModel/MVVM_LoadScreen.h"
 
+#include "Game/AuraGameInstance.h"
 #include "Game/AuraGameMode.h"
 #include "Game/LoadScreenSaveGame.h"
 #include "Kismet/GameplayStatics.h"
@@ -39,6 +40,8 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Index, const FString& PlayerNa
 		LoadSlotViewModelMap[Index]->SetPlayerName(PlayerName);
 		LoadSlotViewModelMap[Index]->SlotStatus = Taken;
 		LoadSlotViewModelMap[Index]->SetMapName(AuraGameMode->StartLoadMapName);
+		LoadSlotViewModelMap[Index]->PlayerStartTag = AuraGameMode->DefaultPlayerStartTag;
+		LoadSlotViewModelMap[Index]->SetPlayerLevel(1);
 		
 		AuraGameMode->SaveSlotData(LoadSlotViewModelMap[Index],Index);
 		LoadSlotViewModelMap[Index]->InitializeSlot();
@@ -79,7 +82,17 @@ void UMVVM_LoadScreen::SureDeleteButtonPressed()
 void UMVVM_LoadScreen::PlayButtonPressed()
 {
 	AAuraGameMode* AuraGameMode = Cast<AAuraGameMode>(UGameplayStatics::GetGameMode(this));
-	AuraGameMode->TravelToMap(SelectedSlot);
+	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(AuraGameMode->GetGameInstance());
+	
+	if (IsValid(SelectedSlot))
+	{
+		AuraGameInstance->PlayerStartTag = AuraGameMode->DefaultPlayerStartTag;
+		AuraGameInstance->LoadSlotName = SelectedSlot->GetLoadSlotName();
+		AuraGameInstance->SlotIndex = SelectedSlot->LoadSlotIndex;
+		AuraGameInstance->PlayerStartTag = SelectedSlot->PlayerStartTag;
+		AuraGameMode->TravelToMap(SelectedSlot);
+	}
+	
 }
 
 void UMVVM_LoadScreen::LoadData()
@@ -93,11 +106,14 @@ void UMVVM_LoadScreen::LoadData()
 		TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = SaveGameObject->SlotStatus;
 		FString PlayerName = SaveGameObject->PlayerName;
 		FString MapName = SaveGameObject->CurMapName;
+		FName PlayerStartTag = SaveGameObject->PlayerStartTag;
 		
 		
 		LoadSlot.Value->SlotStatus = SaveSlotStatus;
 		LoadSlot.Value->SetPlayerName(PlayerName);
 		LoadSlot.Value->SetMapName(MapName);
+		LoadSlot.Value->PlayerStartTag = PlayerStartTag;
+		LoadSlot.Value->SetPlayerLevel(SaveGameObject->PlayerLevel);
 		LoadSlot.Value->InitializeSlot();
 	}
 }

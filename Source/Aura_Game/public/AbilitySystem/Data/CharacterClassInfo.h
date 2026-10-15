@@ -45,8 +45,14 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category=" Character Class Info ")
 	TMap<ECharacterClass, FCharacterClassDefaultInfo> CharacterClassInformation;
 	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category="Common Class")
+	TSubclassOf<UGameplayEffect> PrimaryAttributes_SetByCaller;
+	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Common Class ")
 	TSubclassOf<UGameplayEffect> SecondsAttributes;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Common Class ")
+	TSubclassOf<UGameplayEffect> SecondsAttributes_Infinite;
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category="Common Class ")
 	TSubclassOf<UGameplayEffect> VitalAttributes;

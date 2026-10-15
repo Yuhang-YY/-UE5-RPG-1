@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraWidgetControllerLibrary.generated.h"
 
+class ULoadScreenSaveGame;
 struct FGameplayTag;
 struct FDamageEffectParams;
 class UAuraAbilityInfo;
@@ -35,6 +36,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable,Category="Aura")
 	static void InitializeCharacterClassInfo(const UObject* WorldContextObject,ECharacterClass CharacterClass,float Level,UAbilitySystemComponent* ASC);
+	
+	UFUNCTION(BlueprintCallable,Category="Aura")
+	static void InitializeAuraDataFromSaveGame(const UObject* WorldContextObject,UAbilitySystemComponent* ASC,ULoadScreenSaveGame* SaveGame);
 	
 	UFUNCTION(BlueprintCallable,Category="Aura")
 	static void GiveEnemyStartUpAbilities(const UObject* WorldContextObject,UAbilitySystemComponent* ASC,ECharacterClass CharacterClass);

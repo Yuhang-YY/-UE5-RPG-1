@@ -35,11 +35,15 @@ public:
 	virtual int32 GetSpellPoint_Implementation() override;
 	virtual void ShowMagicCircleDecal_Implementation(UMaterialInterface* DecalMaterial) override;
 	virtual void HideMagicCircleDecal_Implementation() override;
+	virtual void SaveProgress_Implementation(const FName& CheckPointTag) override;
 	//**   playerInterface     **//
 	
 	
 	//在服务器上，当controller控制Pawn时，调用回调函数，进行组件初始化
 	virtual void PossessedBy(AController* NewController) override;
+	
+	void LoadProgress();
+	
 	
 	//在客户端上，同步数据
 	virtual void OnRep_PlayerState() override;

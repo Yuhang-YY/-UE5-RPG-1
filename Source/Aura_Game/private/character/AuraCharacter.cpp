@@ -6,8 +6,14 @@
 #include "NiagaraComponent.h"
 #include "UAuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/AuraAttributeSet.h"
+#include "AbilitySystem/Data/AuraAbilityInfo.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
+#include "Game/AuraGameMode.h"
+#include "Game/LoadScreenSaveGame.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Library/AuraWidgetControllerLibrary.h"
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
 #include "UI/HUD/AuraHUD.h"
@@ -145,15 +151,87 @@ void AAuraCharacter::HideMagicCircleDecal_Implementation()
 	}
 }
 
+void AAuraCharacter::SaveProgress_Implementation(const FName& CheckPointTag)
+{
+	 AAuraGameMode* AuraGameMode = Cast<AAuraGameMode>(UGameplayStatics::GetGameMode(this));
+	ULoadScreenSaveGame* LoadScreenSaveGame = AuraGameMode->GetSaveGameSlotByInstance();
+	if (LoadScreenSaveGame == nullptr) return;
+	
+	LoadScreenSaveGame->PlayerStartTag = CheckPointTag;
+	if (AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
+	{
+		LoadScreenSaveGame->PlayerLevel = AuraPlayerState->GetPlayerLevel();
+		LoadScreenSaveGame->XP = AuraPlayerState->GetExperience();
+		LoadScreenSaveGame->AttributePoint = AuraPlayerState->GetAttributePoints();
+		LoadScreenSaveGame->SpellPoint = AuraPlayerState->GetSpellPoints();
+		
+		UAuraAttributeSet* AuraAttributes = Cast<UAuraAttributeSet>(GetAttributeSet());
+		LoadScreenSaveGame->Strength = AuraAttributes->GetStrength();
+		LoadScreenSaveGame->Intelligence = AuraAttributes->GetIntelligence();
+		LoadScreenSaveGame->Resilience = AuraAttributes->GetResilience();
+		LoadScreenSaveGame->Vigor = AuraAttributes->GetVigor();
+	}
+	LoadScreenSaveGame->bFirstLoad = false;
+	
+	if (!HasAuthority())return;
+	UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent);
+	FForEachAbility SaveAbilityDelegate;
+	SaveAbilityDelegate.BindLambda([this, AuraASC, LoadScreenSaveGame](const FGameplayAbilitySpec& Spec)
+	{
+		const FGameplayTag AbilityTag = AuraASC->GetAbilityTagFromSpec(Spec);
+		UAuraAbilityInfo* AbilityInfo = UAuraWidgetControllerLibrary::GetAbilityInfo(this);
+		FAbilityInfo Info = AbilityInfo->FindAbilityInfoByTag(AbilityTag);
+		
+		FSavedAbility SavedAbility;
+		SavedAbility.GameplayAbility = Info.GameplayAbility;
+		SavedAbility.AbilityLevel = Spec.Level;
+		SavedAbility.AbilitySlot = AuraASC->GetInputTagFromSpec(Spec);
+		SavedAbility.AbilityStatus = AuraASC->GetStatusTagFromSpec(Spec);
+		SavedAbility.AbilityTag = AbilityTag;
+		SavedAbility.AbilityType = Info.AbilityType;
+		
+		LoadScreenSaveGame->SavedAbilities.Add(SavedAbility);
+	});
+	
+	AuraASC->ForEachAbility(SaveAbilityDelegate);
+	AuraGameMode->SaveInGameProgressData(LoadScreenSaveGame);
+}
+
 void AAuraCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
 	InitAbilityActorInfo();
 	//在服务器端上将技能添加到组件管理
-	AddCharacterAbilities();
+	LoadProgress();
 	
 }
+
+void AAuraCharacter::LoadProgress()
+{
+	AAuraGameMode* AuraGameMode = Cast<AAuraGameMode>(UGameplayStatics::GetGameMode(this));
+	ULoadScreenSaveGame* LoadScreenSaveGame = AuraGameMode->GetSaveGameSlotByInstance();
+	if (LoadScreenSaveGame == nullptr) return;
+	
+	
+	if (LoadScreenSaveGame->bFirstLoad)
+	{
+		InitializeDefaultAttribute();
+		AddCharacterAbilities();
+	}
+	else
+	{
+		if (AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
+		{
+			AuraPlayerState->SetLevel(LoadScreenSaveGame->PlayerLevel);
+			AuraPlayerState->SetXP(LoadScreenSaveGame->XP);
+			AuraPlayerState->SetAttribute(LoadScreenSaveGame->AttributePoint);
+			AuraPlayerState->SetSpellPoints(LoadScreenSaveGame->SpellPoint);
+		}
+		UAuraWidgetControllerLibrary::InitializeAuraDataFromSaveGame(this,GetAbilitySystemComponent(),LoadScreenSaveGame);
+	}
+}
+
 
 void AAuraCharacter::OnRep_PlayerState()
 {
@@ -185,7 +263,6 @@ void AAuraCharacter::InitAbilityActorInfo()
 	{ 
 		AbilitySystemComponent->RegisterGameplayTagEvent(FUAuraGameplayTags::Get().Debuff_Stun,EGameplayTagEventType::NewOrRemoved).AddUObject(this,&AAuraCharacter::StunTagChance);
 	}
-	InitializeDefaultAttribute();
 	
 }
 

@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/SaveGame.h"
 #include "LoadScreenSaveGame.generated.h"
+
+class UGameplayAbility;
 
 UENUM(BlueprintType)
 enum ESaveSlotStatus
@@ -12,6 +15,30 @@ enum ESaveSlotStatus
 	Vacant,
 	EnterName,
 	Taken
+};
+
+USTRUCT(BlueprintType)
+struct FSavedAbility
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "ClassDefaults")
+	TSubclassOf<UGameplayAbility> GameplayAbility;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityTag = FGameplayTag();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityStatus = FGameplayTag();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilitySlot = FGameplayTag();
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FGameplayTag AbilityType = FGameplayTag();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 AbilityLevel = 1;
 };
 
 /**
@@ -39,4 +66,42 @@ public:
 	
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SlotStatus;
+	
+	UPROPERTY()
+	FName PlayerStartTag = FName();
+	
+	UPROPERTY()
+	bool bFirstLoad = true;
+	
+	
+	/*Player*/
+	
+	UPROPERTY()
+	int32 PlayerLevel = 1;
+	
+	UPROPERTY()
+	int32 XP = 0;
+	
+	UPROPERTY()
+	int32 AttributePoint = 0;
+	
+	UPROPERTY()
+	int32 SpellPoint = 0;
+	
+	UPROPERTY()
+	float Strength = 0.0f;
+	
+	UPROPERTY()
+	float Intelligence = 0.0f;
+	
+	UPROPERTY()
+	float Vigor = 0.0f;
+	
+	UPROPERTY()
+	float Resilience = 0.0f;
+	
+	/*Abilities*/
+	UPROPERTY()
+	TArray<FSavedAbility> SavedAbilities;
+
 };

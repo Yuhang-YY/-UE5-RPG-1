@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "MVVMViewModelBase.h"
+#include "Game/LoadScreenSaveGame.h"
 #include "MVVM_LoadSlot.generated.h"
 
-enum ESaveSlotStatus : int;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSetWidgetSwitcherIndex, int32, WidgetSwitcherIndex);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEnableSelectedSlotButton, bool, Enable);
 /**
@@ -27,15 +27,15 @@ public:
 	void InitializeSlot();
 	
 	/*FieldNotifyFunction*/
-	UFUNCTION()
 	void SetPlayerName(const FString& InPlayerName);
-	
-	UFUNCTION()
 	void SetMapName(const FString& InMapName);
+	void SetPlayerLevel(const int32 InPlayerLevel);
 	
 	UFUNCTION()
 	FString GetPlayerName()const{return PlayerName;}
 	FString GetMapName()const{return MapName;}
+	int32 GetPlayerLevel()const{return PlayerLevel;}
+	
 	/*FieldNotifyFunction*/
 	
 	
@@ -51,6 +51,9 @@ public:
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SlotStatus;
 	
+	UPROPERTY()
+	FName PlayerStartTag;
+	
 
 private:
 	
@@ -63,5 +66,8 @@ private:
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,FieldNotify,Setter,Getter,meta=(AllowPrivateAccess=true));
 	FString MapName;
+	
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,FieldNotify,Setter,Getter,meta=(AllowPrivateAccess=true));
+	int32 PlayerLevel;
 	/*FieldNotifyProperty*/
 };
