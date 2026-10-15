@@ -173,6 +173,7 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckPointTag)
 	}
 	LoadScreenSaveGame->bFirstLoad = false;
 	
+	LoadScreenSaveGame->SavedAbilities.Empty();
 	if (!HasAuthority())return;
 	UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent);
 	FForEachAbility SaveAbilityDelegate;
@@ -190,7 +191,7 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckPointTag)
 		SavedAbility.AbilityTag = AbilityTag;
 		SavedAbility.AbilityType = Info.AbilityType;
 		
-		LoadScreenSaveGame->SavedAbilities.Add(SavedAbility);
+		LoadScreenSaveGame->SavedAbilities.AddUnique(SavedAbility);
 	});
 	
 	AuraASC->ForEachAbility(SaveAbilityDelegate);
@@ -221,6 +222,11 @@ void AAuraCharacter::LoadProgress()
 	}
 	else
 	{
+		UAuraAbilitySystemComponent* AuraASC =Cast<UAuraAbilitySystemComponent>(GetAbilitySystemComponent());
+		if (AuraASC)
+		{
+			AuraASC->AddCharacterAbilitiesForSaveGame(LoadScreenSaveGame);
+		}
 		if (AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
 		{
 			AuraPlayerState->SetLevel(LoadScreenSaveGame->PlayerLevel);

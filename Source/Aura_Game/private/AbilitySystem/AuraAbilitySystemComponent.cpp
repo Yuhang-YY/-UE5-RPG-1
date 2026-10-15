@@ -8,6 +8,7 @@
 #include "Abilities/AuraGameplayAbility.h"
 #include "AbilitySystem/Data/AuraAbilityInfo.h"
 #include "Aura_Game/AuraLogChannels.h"
+#include "Game/LoadScreenSaveGame.h"
 #include "Interaction/PlayerInterface.h"
 #include "Library/AuraWidgetControllerLibrary.h"
 
@@ -18,9 +19,40 @@ void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 	const FUAuraGameplayTags& GameplayTags = FUAuraGameplayTags::Get();
 }
 
+void UAuraAbilitySystemComponent::AddCharacterAbilitiesForSaveGame(ULoadScreenSaveGame* SaveGame)
+{
+	for (const FSavedAbility& SaveData : SaveGame->SavedAbilities)
+	{
+		const TSubclassOf<UGameplayAbility> AbilityClass = SaveData.GameplayAbility;
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass, SaveData.AbilityLevel);
+		
+		AbilitySpec.DynamicAbilityTags.AddTag(SaveData.AbilitySlot);
+		AbilitySpec.DynamicAbilityTags.AddTag(SaveData.AbilityStatus);
+		
+		if (SaveData.AbilityType == FUAuraGameplayTags::Get().Ability_Type_Offensive)
+		{
+			GiveAbility(AbilitySpec);
+		}
+		else if (SaveData.AbilityType == FUAuraGameplayTags::Get().Ability_Type_Passive)
+		{
+			if (SaveData.AbilityStatus.MatchesTagExact(FUAuraGameplayTags::Get().Ability_Status_Equipped))
+			{
+				GiveAbilityAndActivateOnce(AbilitySpec);
+			}
+			else
+			{
+				GiveAbility(AbilitySpec);
+			}
+			
+		}
+	}
+	bAbilityGiven = true;
+	FAbilityGivenDelegate.Broadcast();
+}
+
 
 void UAuraAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent,
-                                                const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle)
+                                                                     const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveGameplayEffectHandle)
 {
 	FGameplayTagContainer TagContainer;
 	EffectSpec.GetAllAssetTags(TagContainer);
@@ -50,6 +82,7 @@ void UAuraAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<TSub
 	for (const TSubclassOf<UGameplayAbility> AbilityClass : PassiveAbilities)
 	{
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass,1);
+		AbilitySpec.DynamicAbilityTags.AddTag(FUAuraGameplayTags::Get().Ability_Status_Equipped);
 		GiveAbilityAndActivateOnce(AbilitySpec);
 	}
 }
@@ -376,6 +409,8 @@ void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 					TryActivateAbility(Spec->Handle);
 					MulticastActivatePassiveEffect(AbilityTag,true);
 				}
+				Spec->DynamicAbilityTags.RemoveTag(GetStatusTagFromSpec(*Spec));
+				Spec->DynamicAbilityTags.AddTag(FUAuraGameplayTags::Get().Ability_Status_Equipped);
 			}
 			AssignSlotToAbility(*Spec,Slot);
 			MarkAbilitySpecDirty(*Spec);

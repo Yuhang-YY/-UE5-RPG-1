@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AuraAbilitySystemComponent.generated.h"
 
+class ULoadScreenSaveGame;
 class UAuraAbilitySystemComponent;
 struct FGameplayTag;
 
@@ -29,6 +30,7 @@ public:
 	//初始化effect应用时调用委托把数据传过去
 	void AbilityActorInfoSet();
 	
+	void AddCharacterAbilitiesForSaveGame(ULoadScreenSaveGame* SaveGame);
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartUpAbilities);
 	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& PassiveAbilities);
 	
