@@ -147,7 +147,6 @@ public:
 	UPROPERTY()
 	TArray<FSavedMap> SavedMap;
 	
-	
 	FSavedMap GetSavedMapWithMapName(const FString& InMapName);
 	
 	bool HasMap(const FString& InMapName);

@@ -3,6 +3,7 @@
 
 #include "CheckPoint/CheckPoint.h"
 #include "Components/SphereComponent.h"
+#include "Game/AuraGameMode.h"
 #include "Interaction/PlayerInterface.h"
 
 ACheckPoint::ACheckPoint(const FObjectInitializer& ObjectInitializer)
@@ -24,9 +25,27 @@ ACheckPoint::ACheckPoint(const FObjectInitializer& ObjectInitializer)
 void ACheckPoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->Implements<UPlayerInterface>())
+	if (HasAuthority() && !bReached && IsValid(OtherActor) && OtherActor->Implements<UPlayerInterface>())
 	{
+		bReached = true;
 		IPlayerInterface::Execute_SaveProgress(OtherActor,PlayerStartTag);
+		if (AAuraGameMode* AuraGameMode = GetWorld()->GetAuthGameMode<AAuraGameMode>())
+		{
+			AuraGameMode->SaveWorldState(GetWorld());
+		}
+		HandleGlowEffects();
+	}
+}
+
+bool ACheckPoint::ShouldLoadTransform_Implementation()
+{
+	return false;
+}
+
+void ACheckPoint::LoadActor_Implementation()
+{
+	if (bReached)
+	{
 		HandleGlowEffects();
 	}
 }
@@ -40,7 +59,9 @@ void ACheckPoint::BeginPlay()
 void ACheckPoint::HandleGlowEffects()
 {
 	Sphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	UMaterialInstanceDynamic* DynamicMaterialInstance = UMaterialInstanceDynamic::Create(CheckpointMesh->GetMaterial(0),this);
-	CheckpointMesh->SetMaterial(0, DynamicMaterialInstance);
-	CheckPointReached(DynamicMaterialInstance);
+	// Reuse an existing dynamic material instead of making it another MID's parent.
+	if (UMaterialInstanceDynamic* DynamicMaterialInstance = CheckpointMesh->CreateDynamicMaterialInstance(0))
+	{
+		CheckPointReached(DynamicMaterialInstance);
+	}
 }
